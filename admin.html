@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Requests — Administration</title>
+  <meta name="theme-color" content="#070707">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+</head>
+<body class="page">
+  <header class="nav is-solid">
+    <a class="nav__brand" href="index.html">THE&nbsp;ROCK</a>
+    <button class="btn btn--sm" id="signOut" hidden>Sign out</button>
+  </header>
+
+  <main class="section page__main">
+    <div class="wrap">
+      <!-- Sign in -->
+      <form class="login" id="login">
+        <p class="eyebrow">Administration</p>
+        <h1 class="title">Requests</h1>
+        <div class="field">
+          <label for="password">Administrator password</label>
+          <input id="password" type="password" autocomplete="current-password" required>
+          <p class="field__error" id="loginError" role="alert"></p>
+        </div>
+        <button class="btn btn--gold btn--block" type="submit">Sign in</button>
+      </form>
+
+      <!-- Inbox -->
+      <section id="inbox" hidden>
+        <p class="eyebrow">Administration</p>
+        <h1 class="title">Requests <span class="count" id="count"></span></h1>
+
+        <div class="toolbar">
+          <input id="search" type="search" placeholder="Search name, e-mail, subject, message…" aria-label="Search requests">
+          <select id="filterType" aria-label="Filter by category"><option value="">All categories</option></select>
+          <select id="filterRead" aria-label="Filter by status">
+            <option value="">Read and unread</option>
+            <option value="unread">Unread only</option>
+            <option value="read">Read only</option>
+          </select>
+          <button class="btn btn--sm" id="refresh">Refresh</button>
+          <button class="btn btn--sm btn--gold" id="export">Export CSV</button>
+        </div>
+        <p class="form__alert" id="adminAlert" role="alert" hidden></p>
+        <ul class="requests" id="requests"></ul>
+        <p class="empty" id="empty" hidden>No request matches.</p>
+      </section>
+    </div>
+  </main>
+
+  <script src="assets/js/admin.js"></script>
+</body>
+</html>

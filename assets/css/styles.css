@@ -327,3 +327,7 @@ figure { margin: 0; }
 }
 @media (min-width: 701px) { .hero__title { font-size: clamp(4rem, 10.2vw, 10rem); } }
 @media (min-width: 900px) { .hero__bg img { width: 130%; } }
+
+/* ---------- Progressive image loading ---------- */
+.media img, .hero__bg img, .impact__bg img { opacity: 0; transition: opacity .5s ease, transform .9s var(--ease), filter .9s var(--ease); }
+.media img.is-loaded, .hero__bg img.is-loaded, .impact__bg img.is-loaded { opacity: 1; }

@@ -16,35 +16,37 @@
   };
   const license = (name) => LICENSE_URL[name] ? `<a href="${LICENSE_URL[name]}" target="_blank" rel="noopener license">${esc(name)}</a>` : esc(name);
 
-  // Resolves an image slot: a local "image" wins over a library "photo".
-  const pic = (o, w = 960) => {
-    if (o.image) return { src: o.image, caption: "", byline: esc(o.credit || "") };
-    const p = S.photos[o.photo];
-    if (!p) return null;
-    const file = p.path.split("/").pop();
-    const thumb = (n) => `https://upload.wikimedia.org/wikipedia/commons/thumb/${p.path}/${n}px-${file}`;
-    const max = Math.min(w, p.max || w);
-    return {
-      src: thumb(max),
-      // Wikimedia only serves these thumbnail widths; the browser picks the smallest that fits.
-      srcset: [330, 500, 960, 1280, 1920].filter((n) => n <= max).map((n) => `${thumb(n)} ${n}w`).join(", "),
-      caption: p.caption,
-      byline: `${esc(p.author)} · ${license(p.license)} · <a href="https://commons.wikimedia.org/wiki/File:${file}" target="_blank" rel="noopener">Wikimedia Commons</a>`,
-    };
+  // Image addresses come from images.js; this adds the caption and attribution line.
+  const pic = (o, w) => {
+    const x = window.sitePic(o, w);
+    if (!x) return null;
+    const p = x.photo;
+    x.caption = p ? p.caption : "";
+    x.byline = p
+      ? `${esc(p.author)} · ${license(p.license)} · <a href="https://commons.wikimedia.org/wiki/File:${x.file}" target="_blank" rel="noopener">Wikimedia Commons</a>`
+      : esc(o.credit || "");
+    return x;
   };
-  const CARD = "(max-width: 600px) 100vw, (max-width: 1020px) 50vw, 33vw";
-  const img = (o, w, eager, sizes = w > 960 ? "100vw" : CARD) => {
-    const x = pic(o, w);
+  // "sizes" tells the browser how wide each picture is displayed, so it downloads the smallest file that fits.
+  const SIZES = {
+    card: "(max-width: 600px) 100vw, (max-width: 1020px) 50vw, 33vw",
+    film: "(max-width: 460px) 100vw, (max-width: 1020px) 50vw, 25vw",
+    about: "(max-width: 860px) 100vw, 45vw",
+    step: "(max-width: 760px) 90vw, 40vw",
+    full: "100vw",
+  };
+  const img = (o, w, eager, sizes = w > 960 ? SIZES.full : SIZES.card) => {
+    const x = pic(o, w), fb = x && x.fallback;
     return x
-      ? `<img src="${esc(x.src)}" ${x.srcset ? `srcset="${esc(x.srcset)}" sizes="${sizes}"` : ""} alt="${esc(o.alt ?? x.caption ?? o.title ?? "")}" style="object-position:${esc(o.focus || "50% 22%")}" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" onerror="this.remove()">`
+      ? `<img src="${esc(x.src)}" ${x.srcset ? `srcset="${esc(x.srcset)}" sizes="${sizes}"` : ""} ${fb ? `data-fb="${esc(fb.src)}" data-fbset="${esc(fb.srcset)}"` : ""} alt="${esc(o.alt ?? x.caption ?? o.title ?? "")}" style="object-position:${esc(o.focus || "50% 22%")}" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" onload="this.classList.add('is-loaded')" onerror="siteImgFail(this)">`
       : "";
   };
   const byline = (o) => {
     const x = pic(o);
     return x && (x.caption || x.byline) ? `<p class="byline">Photo: ${[esc(x.caption), x.byline].filter(Boolean).join(" — ")}</p>` : "";
   };
-  const media = (o, i, label, style = "", w) =>
-    `<div class="media" style="--i:${i % 7};${style}">${img(o, w)}<span class="media__label" aria-hidden="true">${esc(label ?? o.title)}</span></div>`;
+  const media = (o, i, label, style = "", w, sizes) =>
+    `<div class="media" style="--i:${i % 7};${style}">${img(o, w, false, sizes)}<span class="media__label" aria-hidden="true">${esc(label ?? o.title)}</span></div>`;
   const paras = (list) => (list || []).map((p) => `<p>${esc(p)}</p>`).join("");
   const fmtDate = (iso) => {
     const d = new Date(iso + "T00:00:00");
@@ -66,16 +68,16 @@
 
   /* ---------- Render ---------- */
   const heroMobile = S.hero.photoMobile && pic({ photo: S.hero.photoMobile });
-  $("#heroBg").innerHTML = `<picture>${heroMobile ? `<source media="(max-width: 700px)" srcset="${esc(heroMobile.srcset)}" sizes="100vw">` : ""}${img(S.hero, 1920, true)}</picture>`;
+  $("#heroBg").innerHTML = `<picture>${heroMobile ? `<source media="(max-width: 700px)" srcset="${esc(heroMobile.srcset)}" sizes="100vw">` : ""}${img(S.hero, 1920, true, window.HERO_SIZES)}</picture>`;
 
-  $("#aboutMedia").innerHTML = media(S.about, 2, "Portrait");
+  $("#aboutMedia").innerHTML = media(S.about, 2, "Portrait", "", 960, SIZES.about);
   $("#aboutCopy").innerHTML = paras(S.about.paragraphs);
   $("#stats").innerHTML = S.about.stats.map((s) =>
     `<div><dt ${s.value != null ? `data-count="${Number(s.value)}" data-suffix="${esc(s.suffix || "")}"` : ""}>${esc(s.text ?? s.value + (s.suffix || ""))}</dt><dd>${esc(s.label)}</dd></div>`).join("");
 
   $("#films").innerHTML = S.films.map((f, i) => `
     <article class="film reveal" style="--d:${i % 4}">
-      ${media(f, i, f.year)}
+      ${media(f, i, f.year, "", 960, SIZES.film)}
       <div class="film__info">
         <span class="film__year">${esc(f.year)}</span>
         <h3 class="film__title">${esc(f.title)}</h3>
@@ -88,7 +90,7 @@
 
   $("#timeline").innerHTML = S.timeline.map((t, i) => `
     <li class="tl reveal">
-      ${pic(t) ? `<figure class="tl__img">${media(t, i, t.year)}<figcaption>${esc(pic(t).caption)}</figcaption></figure>` : ""}
+      ${pic(t) ? `<figure class="tl__img">${media(t, i, t.year, "", 960, SIZES.step)}<figcaption>${esc(pic(t).caption)}</figcaption></figure>` : ""}
       <span class="tl__year">${esc(t.year)}</span>
       <span class="tl__phase">${esc(t.phase)}</span>
       <h3 class="tl__title">${esc(t.title)}</h3>
@@ -144,9 +146,7 @@
   $("#social").innerHTML = socialLinks(true);
   $("#footerSocial").innerHTML = socialLinks(false);
 
-  $("#footerContact").innerHTML = S.contact.email
-    ? `Corrections, image credits or rights enquiries: <a href="mailto:${esc(S.contact.email)}">${esc(S.contact.email)}</a>`
-    : "For corrections, image credits or rights enquiries, please contact the site administrator.";
+  $("#footerContact").innerHTML = `Questions, corrections or rights enquiries: <a href="contact.html">send a request</a> · <a href="privacy.html">Privacy policy</a>`;
   $("#footerLegal").innerHTML = S.affiliated
     ? `© ${esc(S.year)} — Official Website`
     : `© ${esc(S.year)} — Independent Fan &amp; Information Website

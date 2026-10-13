@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact — Dwayne “The Rock” Johnson Fan &amp; Information Website</title>
+  <meta name="description" content="Send a request to the administrators of this independent fan and information website.">
+  <meta name="theme-color" content="#070707">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+</head>
+<body class="page">
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav is-solid" id="nav">
+    <a class="nav__brand" href="index.html" aria-label="Dwayne “The Rock” Johnson — home">THE&nbsp;ROCK</a>
+    <button class="nav__toggle" id="navToggle" aria-expanded="false" aria-controls="navMenu" aria-label="Menu"><span></span><span></span></button>
+    <nav class="nav__menu" id="navMenu" aria-label="Primary">
+      <a href="index.html#about">About</a>
+      <a href="index.html#film">Film &amp; TV</a>
+      <a href="index.html#career">Career</a>
+      <a href="index.html#business">Business</a>
+      <a href="index.html#philanthropy">Philanthropy</a>
+      <a href="index.html#gallery">Gallery</a>
+      <a href="index.html#news">News</a>
+      <a href="contact.html" class="is-active" aria-current="page">Contact</a>
+    </nav>
+  </header>
+
+  <main id="main" class="section page__main">
+    <div class="wrap contact">
+      <div class="contact__intro">
+        <p class="eyebrow">Contact</p>
+        <h1 class="title">Send a request</h1>
+        <p class="contact__lead">Questions, corrections, image credits or proposals about this website: use the form and the site team will read your message.</p>
+        <p class="notice" id="notice" hidden>
+          <strong>Please note.</strong> This form reaches the administrators of this independent fan website only.
+          It does not reach Dwayne Johnson, his team or his representatives, and messages cannot be forwarded to him.
+        </p>
+        <ul class="contact__points">
+          <li>Every request is read by the site team.</li>
+          <li>Your details are used only to answer you.</li>
+          <li>Never send passwords, payment details or identity documents.</li>
+        </ul>
+      </div>
+
+      <div class="contact__panel">
+        <form class="form" id="contactForm" novalidate>
+          <p class="form__legend"><span class="req">*</span> Required fields</p>
+          <div class="form__alert" id="formAlert" role="alert" hidden></div>
+
+          <div class="field">
+            <label for="name">Full name <span class="req">*</span></label>
+            <input id="name" name="name" type="text" autocomplete="name" maxlength="100" required>
+            <p class="field__error" id="name-error"></p>
+          </div>
+          <div class="field">
+            <label for="email">E-mail address <span class="req">*</span></label>
+            <input id="email" name="email" type="email" autocomplete="email" maxlength="200" inputmode="email" required>
+            <p class="field__error" id="email-error"></p>
+          </div>
+          <div class="field">
+            <label for="phone">Phone number <span class="opt">(optional)</span></label>
+            <div class="field__phone">
+              <input id="dial" name="dial" type="text" inputmode="tel" autocomplete="tel-country-code" maxlength="5" placeholder="+1" aria-label="International dialling code">
+              <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel-national" maxlength="24" placeholder="Phone number">
+            </div>
+            <p class="field__error" id="phone-error"></p>
+          </div>
+          <div class="field">
+            <label for="country">Country <span class="req">*</span></label>
+            <select id="country" name="country" autocomplete="country-name" required><option value="">Select your country</option></select>
+            <p class="field__error" id="country-error"></p>
+          </div>
+          <div class="field">
+            <label for="type">Request type <span class="req">*</span></label>
+            <select id="type" name="type" required>
+              <option value="">Select a type</option>
+              <option>General enquiry</option>
+              <option>Professional enquiry</option>
+              <option>Partnership request</option>
+              <option>Media request</option>
+              <option>Event request</option>
+              <option>Philanthropic request</option>
+              <option>Other</option>
+            </select>
+            <p class="field__error" id="type-error"></p>
+          </div>
+          <div class="field">
+            <label for="subject">Subject <span class="req">*</span></label>
+            <input id="subject" name="subject" type="text" maxlength="150" required>
+            <p class="field__error" id="subject-error"></p>
+          </div>
+          <div class="field field--wide">
+            <label for="message">Message / description of your request <span class="req">*</span></label>
+            <textarea id="message" name="message" rows="6" maxlength="4000" required></textarea>
+            <p class="field__error" id="message-error"></p>
+          </div>
+
+          <!-- Anti-spam trap: hidden from people, filled in by bots. -->
+          <div class="field--trap" aria-hidden="true">
+            <label for="website">Website</label>
+            <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
+
+          <div class="field field--wide field--check">
+            <input id="consent" name="consent" type="checkbox" required>
+            <label for="consent">I accept the <a href="privacy.html" target="_blank" rel="noopener">privacy policy</a> <span class="req">*</span></label>
+            <p class="field__error" id="consent-error"></p>
+          </div>
+
+          <div class="field--wide">
+            <button class="btn btn--gold btn--block" id="submitBtn" type="submit">Send my request</button>
+          </div>
+        </form>
+
+        <div class="form__done" id="formDone" tabindex="-1" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>
+          <h2>Request received</h2>
+          <p>Thank you for contacting us. Your request has been successfully received. Our team will review your message and respond if appropriate.</p>
+          <a class="btn" href="index.html">Back to the website</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer footer--slim">
+    <div class="wrap">
+      <p class="footer__legal" id="footerLegal"></p>
+    </div>
+  </footer>
+
+  <script src="assets/js/content.js"></script>
+  <script src="assets/js/contact.js"></script>
+</body>
+</html>

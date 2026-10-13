@@ -16,7 +16,7 @@ Everything editable lives in one file: `assets/js/content.js`.
 | Gallery photos and categories | `gallery` |
 | News articles (3 to 6) | `news` — set `url` to link to a source, or leave it empty to open `body` in a panel |
 | Social links | `social` — official, verified accounts only |
-| Contact e-mail in the footer | `contact.email` |
+| Contact form, requests, notifications | see "Contact form and requests" below |
 | Legal positioning | `affiliated` (see below) |
 
 ### Images
@@ -61,6 +61,43 @@ licensed photograph of Dwayne Johnson instead, with its true caption in the deta
 official visual only if you have cleared it. The library photos are currently loaded directly from
 Wikimedia's servers; for a production site, download the ones you keep into `assets/img/` (same
 attribution) so the site does not depend on a third-party host.
+
+### Performance
+
+- On Vercel, library photos are served through Vercel Image Optimization (`vercel.json` → `images`):
+  AVIF/WebP, resized to the widths listed there, cached on the CDN. `assets/js/images.js` builds the
+  addresses and must use the same width list. If the optimizer refuses a picture, the page falls back
+  to the Wikimedia thumbnail. Set `imageOptimizer: false` in `content.js` to switch it off.
+- Only the hero picture is preloaded (a portrait version on phones); every other picture is lazy-loaded
+  and fades in over a fixed-ratio panel, so nothing moves while the page loads.
+- Your own files in `assets/img/` are served as they are: export them as WebP at the sizes above.
+- There is no build step, so CSS and JavaScript are not minified; Vercel compresses them (Brotli) and
+  `vercel.json` sets the browser cache (1 hour for `assets/`, 30 days for `assets/img/`).
+
+### Contact form and requests
+
+`contact.html` sends each request to `/api/contact`, which stores it and e-mails a notification.
+`admin.html` (not linked from the menu, not indexed) lists the requests: search, filter by category
+and read/unread, mark as read/unread, delete, export to CSV. Requests older than 12 months are
+deleted automatically when the list is opened (`RETENTION_DAYS` to change it).
+
+These functions only run on **Vercel** (not on GitHub Pages) and need the settings below, added in
+Vercel → Project → Settings → Environment Variables, followed by a redeploy. Until the storage is
+connected, the form answers "not available at the moment".
+
+| Setting | What it is |
+| --- | --- |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Storage. Added automatically by Vercel → Storage → Upstash for Redis → connect to the project |
+| `ADMIN_PASSWORD` | Password of `admin.html`. Choose a long, unique one |
+| `RESEND_API_KEY` | Key from resend.com, for the notification e-mail (optional: without it, requests are stored but no e-mail is sent) |
+| `ADMIN_EMAIL` | Address that receives the notifications. Never shown on the site |
+| `MAIL_FROM` | Optional sender, e.g. `Website <contact@your-domain.com>`, once your domain is verified in Resend |
+
+Anti-spam: hidden trap field, minimum fill time, and 5 requests per 10 minutes per visitor.
+The privacy policy (`privacy.html`) is a starting template: have it checked, and set who operates
+the site in `contact.operator` in `content.js`.
+
+Local preview with a temporary in-memory store: `node .claude/serve.js`, then `sh .claude/test-api.sh`.
 
 ### Legal positioning
 

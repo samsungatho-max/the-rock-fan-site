@@ -15,7 +15,8 @@ window.SITE = {
   year: 2026,
 
   contact: {
-    email: "", // e.g. "hello@your-domain.com" — shown in the footer when set
+    // Who handles messages sent through the contact form (printed in the privacy policy).
+    operator: "the administrators of this website",
   },
 
   // Official, verified accounts only.
