@@ -23,8 +23,8 @@ Everything editable lives in one file: `assets/js/content.js`.
 
 Every image slot is filled from the **photo library** at the top of `content.js` (`photos`):
 36 freely licensed or public-domain photographs hosted by Wikimedia Commons, each stored with its
-author, licence and real caption. Attribution is shown under enlarged pictures and in the
-"Photo credits" panel linked from the footer — keep that panel, the CC licences require it.
+author, licence and real caption. Attribution is listed in the
+"Legal notice" panel linked from the footer — keep that panel public, the CC licences require it.
 
 **Replacing an image**
 

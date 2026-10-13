@@ -159,7 +159,6 @@ window.SITE = {
     url: "", // optional link for the button; leave empty to open the text below in a panel
     more: [
       "Giving back has been a constant alongside the films, the brands and the ring: time spent with children and families, support for community causes, and encouragement for people facing difficult moments.",
-      "This page deliberately avoids figures and named partnerships that have not been confirmed by a reliable source. Replace this text in content.js with sourced information as you verify it.",
     ],
   },
 

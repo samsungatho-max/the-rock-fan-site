@@ -41,10 +41,6 @@
       ? `<img src="${esc(x.src)}" ${x.srcset ? `srcset="${esc(x.srcset)}" sizes="${sizes}"` : ""} ${fb ? `data-fb="${esc(fb.src)}" data-fbset="${esc(fb.srcset)}"` : ""} alt="${esc(o.alt ?? x.caption ?? o.title ?? "")}" style="object-position:${esc(o.focus || "50% 22%")}" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" onload="this.classList.add('is-loaded')" onerror="siteImgFail(this)">`
       : "";
   };
-  const byline = (o) => {
-    const x = pic(o);
-    return x && (x.caption || x.byline) ? `<p class="byline">Photo: ${[esc(x.caption), x.byline].filter(Boolean).join(" — ")}</p>` : "";
-  };
   const media = (o, i, label, style = "", w, sizes) =>
     `<div class="media" style="--i:${i % 7};${style}">${img(o, w, false, sizes)}<span class="media__label" aria-hidden="true">${esc(label ?? o.title)}</span></div>`;
   const paras = (list) => (list || []).map((p) => `<p>${esc(p)}</p>`).join("");
@@ -98,7 +94,7 @@
     </li>`).join("");
 
   const banner = S.businessBanner && pic(S.businessBanner);
-  if (banner) $("#bizBanner").innerHTML = `${media(S.businessBanner, 4, "Business", "", 1920)}<figcaption>${esc(banner.caption)}</figcaption>`;
+  if (banner) $("#bizBanner").innerHTML = `${media(S.businessBanner, 4, "Business", "", 1920)}`;
   else $("#bizBanner").remove();
 
   $("#biz").innerHTML =S.business.map((b, i) => `
@@ -151,7 +147,7 @@
     ? `© ${esc(S.year)} — Official Website`
     : `© ${esc(S.year)} — Independent Fan &amp; Information Website
        <span>This website is an independent fan/information website and is not affiliated with or endorsed by Dwayne Johnson. All trademarks, film titles and images belong to their respective owners.</span>`;
-  $("#footerLegal").insertAdjacentHTML("beforeend", ` <button class="link" data-open="credits">Photo credits</button>`);
+  $("#footerLegal").insertAdjacentHTML("beforeend", ` <button class="link" data-open="credits">Legal notice</button>`);
 
   /* ---------- Modal ---------- */
   const modal = $("#modal");
@@ -161,26 +157,27 @@
       return `<div class="modal__split">${media(f, i, f.year)}
         <div class="modal__text"><p class="eyebrow">Film</p><h3>${esc(f.title)}</h3>
         <dl><dt>Year</dt><dd>${esc(f.year)}</dd><dt>Role</dt><dd>${esc(f.role)}</dd></dl>
-        <p>${esc(f.details)}</p>${byline(f)}</div></div>`;
+        <p>${esc(f.details)}</p></div></div>`;
     },
     news(i) {
       const n = S.news[i];
       return `<div class="modal__media">${media(n, i + 3, n.category, "", 1280)}</div>
         <div class="modal__text"><p class="eyebrow">${esc(n.category)} · ${fmtDate(n.date)}</p><h3>${esc(n.title)}</h3>
-        <p>${esc(n.summary)}</p>${paras(n.body)}${byline(n)}</div>`;
+        <p>${esc(n.summary)}</p>${paras(n.body)}</div>`;
     },
     gallery(i) {
       const g = S.gallery[i], x = pic(g, 1280);
       return `${x ? `<img class="modal__full" src="${esc(x.src)}" alt="${esc(x.caption || g.title)}">` : ""}
-        <div class="modal__text"><p class="eyebrow">${esc(g.category)}</p><h3>${esc(g.title)}</h3>${byline(g)}</div>`;
+        <div class="modal__text"><p class="eyebrow">${esc(g.category)}</p><h3>${esc(g.title)}</h3></div>`;
     },
     credits() {
       const rows = Object.values(S.photos).map((p) => {
         const file = p.path.split("/").pop();
         return `<li><a href="https://commons.wikimedia.org/wiki/File:${file}" target="_blank" rel="noopener">${esc(p.caption)}</a> — ${esc(p.author)}, ${license(p.license)}</li>`;
       }).join("");
-      return `<div class="modal__text"><p class="eyebrow">Sources &amp; licences</p><h3>Photo credits</h3>
-        <p>Photographs are reproduced from Wikimedia Commons under the licences below. Some are cropped to fit the layout; no endorsement by the photographers is implied.</p>
+      // Attribution required by the Creative Commons licences of the photographs: it must stay publicly reachable.
+      return `<div class="modal__text"><p class="eyebrow">Information</p><h3>Legal notice</h3>
+        <p>Photographs on this website are published under the licences listed below. Some have been cropped; no endorsement by their authors is implied.</p>
         <ul class="credits">${rows}</ul></div>`;
     },
     impact() {
