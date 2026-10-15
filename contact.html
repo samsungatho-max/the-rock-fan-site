@@ -16,7 +16,7 @@
   <a class="skip" href="#main">Skip to content</a>
 
   <header class="nav is-solid" id="nav">
-    <a class="nav__brand" href="index.html" aria-label="Dwayne “The Rock” Johnson — home">THE&nbsp;ROCK</a>
+    <a class="nav__brand" translate="no" href="index.html" aria-label="Dwayne “The Rock” Johnson — home">THE&nbsp;ROCK</a>
     <button class="nav__toggle" id="navToggle" aria-expanded="false" aria-controls="navMenu" aria-label="Menu"><span></span><span></span></button>
     <nav class="nav__menu" id="navMenu" aria-label="Primary">
       <a href="index.html#about">About</a>
@@ -79,13 +79,13 @@
             <label for="type">Request type <span class="req">*</span></label>
             <select id="type" name="type" required>
               <option value="">Select a type</option>
-              <option>General enquiry</option>
-              <option>Professional enquiry</option>
-              <option>Partnership request</option>
-              <option>Media request</option>
-              <option>Event request</option>
-              <option>Philanthropic request</option>
-              <option>Other</option>
+              <option value="General enquiry">General enquiry</option>
+              <option value="Professional enquiry">Professional enquiry</option>
+              <option value="Partnership request">Partnership request</option>
+              <option value="Media request">Media request</option>
+              <option value="Event request">Event request</option>
+              <option value="Philanthropic request">Philanthropic request</option>
+              <option value="Other">Other</option>
             </select>
             <p class="field__error" id="type-error"></p>
           </div>

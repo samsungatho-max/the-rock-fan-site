@@ -36,7 +36,9 @@
     if (name && name !== code && !countries.includes(name)) countries.push(name);
   }
   countries.sort((x, y) => x.localeCompare(y));
-  $("#country").insertAdjacentHTML("beforeend", countries.map((c) => `<option>${c.replace(/&/g, "&amp;")}</option>`).join(""));
+  // A fixed value attribute keeps the English name even when the browser translates the page.
+  const attr = (s) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+  $("#country").insertAdjacentHTML("beforeend", countries.map((c) => `<option value="${attr(c)}">${attr(c)}</option>`).join(""));
 
   /* ---------- Validation (same rules as the server) ---------- */
   const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
