@@ -38,7 +38,7 @@
   const img = (o, w, eager, sizes = w > 960 ? SIZES.full : SIZES.card) => {
     const x = pic(o, w), fb = x && x.fallback;
     return x
-      ? `<img src="${esc(x.src)}" ${x.srcset ? `srcset="${esc(x.srcset)}" sizes="${sizes}"` : ""} ${fb ? `data-fb="${esc(fb.src)}" data-fbset="${esc(fb.srcset)}"` : ""} alt="${esc(o.alt ?? x.caption ?? o.title ?? "")}" style="object-position:${esc(o.focus || "50% 22%")}" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" onload="this.classList.add('is-loaded')" onerror="siteImgFail(this)">`
+      ? `<img src="${esc(x.src)}" ${x.srcset ? `srcset="${esc(x.srcset)}" sizes="${sizes}"` : ""} ${fb ? `data-fb="${esc(fb.src)}" data-fbset="${esc(fb.srcset)}"` : ""} alt="${esc(o.alt ?? x.caption ?? o.title ?? "")}" style="object-position:${esc(o.focus || "50% 22%")}" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">`
       : "";
   };
   const media = (o, i, label, style = "", w, sizes) =>

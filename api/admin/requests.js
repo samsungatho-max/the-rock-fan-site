@@ -1,23 +1,22 @@
-// /api/admin/requests — list (GET), change status (PATCH), delete (DELETE). Protected by ADMIN_PASSWORD.
-const crypto = require("crypto");
+// /api/admin/requests — list (GET), change status (PATCH), delete (DELETE). Requires an administrator session (see login.js).
+const auth = require("../_lib/auth");
 const store = require("../_lib/store");
 
 const RETENTION_DAYS = Number(process.env.RETENTION_DAYS) || 365;
 const STATUSES = ["new", "read", "handled", "archived"];
 // Requests saved before statuses existed only have a read flag.
 const statusOf = (r) => (STATUSES.includes(r.status) ? r.status : r.read ? "read" : "new");
-const digest = (s) => crypto.createHash("sha256").update(String(s)).digest();
 
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
-  const password = process.env.ADMIN_PASSWORD;
-  if (!password || !store.configured()) return res.status(503).json({ error: "The administration area is not configured yet." });
+  if (!process.env.ADMIN_PASSWORD || !store.configured()) return res.status(503).json({ error: "The administration area is not configured yet." });
 
   try {
-    const given = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
-    if (!given || !crypto.timingSafeEqual(digest(given), digest(password))) {
-      if (await store.hit(store.ipKey("rl:admin", req), 900) > 10) return res.status(429).json({ error: "Too many attempts. Please try again in 15 minutes." });
-      return res.status(401).json({ error: "Incorrect password." });
+    // Every call is authorised here, on the server, from the session cookie.
+    if (!(await auth.hasSession(req))) return res.status(401).json({ error: "Not signed in." });
+    if (req.method !== "GET" && !auth.sameOrigin(req)) {
+      auth.logEvent("admin_csrf_blocked", req, { method: req.method });
+      return res.status(403).json({ error: "Forbidden." });
     }
 
     if (req.method === "GET") {
@@ -49,7 +48,7 @@ module.exports = async (req, res) => {
     }
     return res.status(405).json({ error: "Method not allowed." });
   } catch (err) {
-    console.error("admin failed:", err.message);
+    console.error(JSON.stringify({ event: "admin_error", message: err.message }));
     return res.status(500).json({ error: "The request could not be completed." });
   }
 };

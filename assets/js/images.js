@@ -3,6 +3,12 @@
 (function () {
   "use strict";
   const S = window.SITE;
+  document.documentElement.classList.add("js");
+
+  // Fade pictures in once loaded; fall back when one fails (no inline handlers, so the CSP can forbid them).
+  const isSlot = (el) => el.tagName === "IMG" && el.closest(".media, .hero__bg, .impact__bg");
+  document.addEventListener("load", (e) => { if (isSlot(e.target)) e.target.classList.add("is-loaded"); }, true);
+  document.addEventListener("error", (e) => { if (isSlot(e.target)) window.siteImgFail(e.target); }, true);
   const local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || location.protocol === "file:";
   // On Vercel, library photos go through its image optimizer: AVIF/WebP, resized per screen, cached on the CDN.
   // Elsewhere (local preview, GitHub Pages) they come straight from Wikimedia's own thumbnails.

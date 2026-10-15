@@ -45,4 +45,23 @@ const clientIp = (req) => String(req.headers["x-forwarded-for"] || (req.socket &
 // Rate-limit keys never hold the raw IP address.
 const ipKey = (prefix, req) => `${prefix}:${crypto.createHash("sha256").update(clientIp(req)).digest("hex").slice(0, 24)}`;
 
-module.exports = { configured, save, get, remove, list, hit, ipKey };
+// Simple keys with an expiry (admin sessions, counters).
+const kv = new Map(); // dev only: key -> { v, until }
+const alive = (k) => { const e = kv.get(k); if (e && e.until < Date.now()) { kv.delete(k); return null; } return e || null; };
+const setKey = async (key, value, ttlSeconds) => {
+  if (dev) { kv.set(key, { v: value, until: Date.now() + ttlSeconds * 1000 }); return; }
+  await redis("SET", key, value, "EX", ttlSeconds);
+};
+const getKey = async (key) => (dev ? (alive(key) || {}).v || null : await redis("GET", key));
+const delKey = async (key) => { dev ? kv.delete(key) : await redis("DEL", key); };
+const touch = async (key, ttlSeconds) => {
+  if (dev) { const e = alive(key); if (e) e.until = Date.now() + ttlSeconds * 1000; return; }
+  await redis("EXPIRE", key, ttlSeconds);
+};
+// Current value of a hit() counter, without incrementing it.
+const count = async (key) => {
+  if (dev) { const h = hits.get(key); return h && h.until >= Date.now() ? h.n : 0; }
+  return Number(await redis("GET", key)) || 0;
+};
+
+module.exports = { configured, save, get, remove, list, hit, count, ipKey, setKey, getKey, delKey, touch };

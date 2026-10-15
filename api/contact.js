@@ -6,7 +6,8 @@ const mail = require("./_lib/notify");
 const TYPES = ["General enquiry", "Professional enquiry", "Partnership request", "Media request", "Event request", "Philanthropic request", "Other"];
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const CONTROL = /[\x00-\x08\x0B\x0C\x0E-\x1F]/g;
-const clean = (v, max) => String(v == null ? "" : v).replace(CONTROL, "").trim().slice(0, max);
+// Only plain text is accepted: objects or arrays sent in place of a field are treated as empty.
+const clean = (v, max) => (typeof v === "string" ? v : "").replace(CONTROL, "").trim().slice(0, max);
 
 function validate(b) {
   const d = {
@@ -32,6 +33,7 @@ function validate(b) {
 module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed." });
   if (!store.configured()) return res.status(503).json({ error: "The contact form is not available at the moment." });
+  if (!/^application\/json/i.test(req.headers["content-type"] || "")) return res.status(415).json({ error: "Unsupported request." });
   const b = req.body && typeof req.body === "object" ? req.body : {};
 
   // Anti-spam: hidden field filled in, or form submitted faster than a person can type.
@@ -43,7 +45,12 @@ module.exports = async (req, res) => {
 
   let rec;
   try {
-    if (await store.hit(store.ipKey("rl:contact", req), 600) > 5) return res.status(429).json({ error: "Too many requests. Please try again later." });
+    // Abuse limits: 5 requests per visitor per 10 minutes, 300 per day for the whole site.
+    const day = new Date().toISOString().slice(0, 10);
+    if (await store.hit(store.ipKey("rl:contact", req), 600) > 5 || await store.hit(`rl:contact:day:${day}`, 86400) > 300) {
+      console.warn(JSON.stringify({ event: "contact_rate_limited" }));
+      return res.status(429).json({ error: "Too many requests. Please try again later." });
+    }
     rec = {
       id: crypto.randomUUID(), createdAt: new Date().toISOString(), status: "new",
       name: d.name, email: d.email, phone: d.phone ? `${d.dial} ${d.phone}` : "", country: d.country,
@@ -53,7 +60,7 @@ module.exports = async (req, res) => {
     // 1. The request is stored first: it is safe in the admin area whatever happens to the e-mail.
     await store.save(rec);
   } catch (err) {
-    console.error("contact failed:", err.message);
+    console.error(JSON.stringify({ event: "contact_store_failed", message: err.message }));
     return res.status(500).json({ error: "Your request could not be sent. Please try again later." });
   }
 
@@ -63,10 +70,10 @@ module.exports = async (req, res) => {
       await mail.notifyAdmin(rec, `https://${req.headers["x-forwarded-host"] || req.headers.host}`);
       rec.notification = "sent";
     } catch (err) {
-      console.error("notification failed:", err.message);
+      console.error(JSON.stringify({ event: "notification_failed", id: rec.id, message: err.message }));
       rec.notification = "failed";
     }
-    await store.save(rec).catch((err) => console.error("status update failed:", err.message));
+    await store.save(rec).catch((err) => console.error(JSON.stringify({ event: "notification_status_save_failed", id: rec.id, message: err.message })));
   }
   return res.status(200).json({ ok: true });
 };

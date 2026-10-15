@@ -77,7 +77,7 @@ attribution) so the site does not depend on a third-party host.
 ### Contact form and requests
 
 `contact.html` sends each request to `/api/contact`, which stores it and e-mails a notification.
-`admin.html` (not linked from the menu, not indexed) lists the requests: search, filter by category
+`admin.html` (also `/admin`; not linked from the menu, not indexed) lists the requests: search, filter by category
 and read/unread, mark as read/unread, delete, export to CSV. Requests older than 12 months are
 deleted automatically when the list is opened (`RETENTION_DAYS` to change it).
 
@@ -88,7 +88,7 @@ connected, the form answers "not available at the moment".
 | Setting | What it is |
 | --- | --- |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Storage. Added automatically by Vercel → Storage → Upstash for Redis → connect to the project |
-| `ADMIN_PASSWORD` | Password of `admin.html`. Choose a long, unique one |
+| `ADMIN_PASSWORD` | Password of `admin.html` (also reachable at `/admin`). Choose a long, unique one. Signing in opens a session cookie (HttpOnly, Secure, SameSite=Strict) that ends after 30 min of inactivity or 8 h; 5 wrong attempts lock sign-in for 15 min |
 | `RESEND_API_KEY` | Key from resend.com, for the notification e-mail (optional: without it, requests are stored but no e-mail is sent) |
 | `ADMIN_EMAIL` | Address that receives the notifications. Never shown on the site |
 | `MAIL_FROM` | Optional sender, e.g. `Website <contact@your-domain.com>`, once your domain is verified in Resend |

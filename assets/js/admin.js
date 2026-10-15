@@ -9,35 +9,40 @@
   };
   const STATUSES = { new: "Nouveau", read: "Lu", handled: "Traité", archived: "Archivé" };
   const NOTIFY = { sent: "E-mail de notification envoyé", failed: "Échec de l'e-mail de notification", off: "Notification e-mail non configurée", pending: "Notification en cours" };
-  const KEY = "admin-session";
+  // The session lives in an HttpOnly cookie set by the server: the password is never stored in the browser.
+  // (Earlier versions kept it in sessionStorage; remove any leftover copy.)
+  try { sessionStorage.removeItem("admin-session"); } catch {}
+  let all = [];
 
-  let password = "", all = [];
-  try { password = sessionStorage.getItem(KEY) || ""; } catch {}
-
-  const api = async (method, body) => {
-    const r = await fetch("/api/admin/requests", {
+  const call = async (url, method, body) => {
+    const r = await fetch(url, {
       method,
-      headers: { Authorization: `Bearer ${password}`, ...(body ? { "Content-Type": "application/json" } : {}) },
+      credentials: "same-origin",
+      headers: body ? { "Content-Type": "application/json" } : {},
       body: body ? JSON.stringify(body) : undefined,
     });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) {
-      const msg = { 401: "Mot de passe incorrect.", 429: "Trop de tentatives. Réessayez dans 15 minutes.", 503: "L'administration n'est pas encore configurée." }[r.status];
+      const msg = {
+        401: url.endsWith("/login") ? "Mot de passe incorrect." : "Session expirée. Veuillez vous reconnecter.",
+        403: "Action refusée.", 429: "Trop de tentatives. Réessayez dans 15 minutes.", 503: "L'administration n'est pas encore configurée.",
+      }[r.status];
       throw Object.assign(new Error(msg || "L'opération n'a pas pu être effectuée."), { status: r.status });
     }
     return j;
   };
+  const api = (method, body) => call("/api/admin/requests", method, body);
 
   const alertBox = $("#adminAlert");
   const fail = (msg) => { alertBox.textContent = msg; alertBox.hidden = false; };
-  const handle = (err) => (err.status === 401 ? signOut() : fail(err.message));
+  const handle = (err) => (err.status === 401 ? showLogin(err.message) : fail(err.message));
 
   /* ---------- Connexion ---------- */
-  function signOut() {
-    password = ""; all = [];
-    try { sessionStorage.removeItem(KEY); } catch {}
+  function showLogin(message) {
+    all = [];
     $("#requests").innerHTML = "";
     $("#inbox").hidden = true; $("#signOut").hidden = true; $("#login").hidden = false;
+    $("#loginError").textContent = message || "";
   }
   async function load() {
     alertBox.hidden = true;
@@ -48,15 +53,20 @@
   }
   $("#login").addEventListener("submit", async (e) => {
     e.preventDefault();
-    password = $("#password").value;
+    const field = $("#password"), button = e.target.querySelector("button");
     $("#loginError").textContent = "";
+    button.disabled = true;
     try {
+      await call("/api/admin/login", "POST", { password: field.value });
+      field.value = "";
       await load();
-      try { sessionStorage.setItem(KEY, password); } catch {}
-      $("#password").value = "";
-    } catch (err) { password = ""; $("#loginError").textContent = err.message; }
+    } catch (err) { $("#loginError").textContent = err.message; }
+    finally { button.disabled = false; }
   });
-  $("#signOut").addEventListener("click", signOut);
+  $("#signOut").addEventListener("click", async () => {
+    await call("/api/admin/logout", "POST", {}).catch(() => {});
+    showLogin("Vous êtes déconnecté.");
+  });
   $("#refresh").addEventListener("click", () => load().catch(handle));
 
   /* ---------- Compteurs, recherche, filtres ---------- */
@@ -191,5 +201,6 @@
     URL.revokeObjectURL(a.href);
   });
 
-  if (password) load().catch(signOut);
+  // Reopens the dashboard directly if a session is still active.
+  load().catch(() => showLogin(""));
 })();
