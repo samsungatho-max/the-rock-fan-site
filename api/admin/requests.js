@@ -1,8 +1,11 @@
-// /api/admin/requests — list (GET), mark read/unread (PATCH), delete (DELETE). Protected by ADMIN_PASSWORD.
+// /api/admin/requests — list (GET), change status (PATCH), delete (DELETE). Protected by ADMIN_PASSWORD.
 const crypto = require("crypto");
 const store = require("../_lib/store");
 
 const RETENTION_DAYS = Number(process.env.RETENTION_DAYS) || 365;
+const STATUSES = ["new", "read", "handled", "archived"];
+// Requests saved before statuses existed only have a read flag.
+const statusOf = (r) => (STATUSES.includes(r.status) ? r.status : r.read ? "read" : "new");
 const digest = (s) => crypto.createHash("sha256").update(String(s)).digest();
 
 module.exports = async (req, res) => {
@@ -22,7 +25,7 @@ module.exports = async (req, res) => {
       const limit = Date.now() - RETENTION_DAYS * 864e5, keep = [];
       for (const r of await store.list()) {
         if (Date.parse(r.createdAt) < limit) await store.remove(r.id);
-        else keep.push(r);
+        else keep.push({ ...r, status: statusOf(r) });
       }
       return res.status(200).json({ requests: keep, retentionDays: RETENTION_DAYS });
     }
@@ -34,7 +37,9 @@ module.exports = async (req, res) => {
     if (req.method === "PATCH") {
       const rec = await store.get(id);
       if (!rec) return res.status(404).json({ error: "Request not found." });
-      rec.read = Boolean(body.read);
+      if (!STATUSES.includes(body.status)) return res.status(400).json({ error: "Unknown status." });
+      rec.status = body.status;
+      delete rec.read;
       await store.save(rec);
       return res.status(200).json({ ok: true });
     }

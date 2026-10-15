@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Requests — Administration</title>
+  <title>Administration — Demandes</title>
   <meta name="theme-color" content="#070707">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,42 +15,40 @@
 <body class="page">
   <header class="nav is-solid">
     <a class="nav__brand" href="index.html">THE&nbsp;ROCK</a>
-    <button class="btn btn--sm" id="signOut" hidden>Sign out</button>
+    <button class="btn btn--sm" id="signOut" hidden>Se déconnecter</button>
   </header>
 
   <main class="section page__main">
     <div class="wrap">
-      <!-- Sign in -->
+      <!-- Connexion -->
       <form class="login" id="login">
         <p class="eyebrow">Administration</p>
-        <h1 class="title">Requests</h1>
+        <h1 class="title">Demandes</h1>
         <div class="field">
-          <label for="password">Administrator password</label>
+          <label for="password">Mot de passe administrateur</label>
           <input id="password" type="password" autocomplete="current-password" required>
           <p class="field__error" id="loginError" role="alert"></p>
         </div>
-        <button class="btn btn--gold btn--block" type="submit">Sign in</button>
+        <button class="btn btn--gold btn--block" type="submit">Se connecter</button>
       </form>
 
-      <!-- Inbox -->
+      <!-- Tableau de bord -->
       <section id="inbox" hidden>
         <p class="eyebrow">Administration</p>
-        <h1 class="title">Requests <span class="count" id="count"></span></h1>
+        <h1 class="title">Demandes / Messages</h1>
+
+        <div class="stats-bar" id="statsBar"></div>
 
         <div class="toolbar">
-          <input id="search" type="search" placeholder="Search name, e-mail, subject, message…" aria-label="Search requests">
-          <select id="filterType" aria-label="Filter by category"><option value="">All categories</option></select>
-          <select id="filterRead" aria-label="Filter by status">
-            <option value="">Read and unread</option>
-            <option value="unread">Unread only</option>
-            <option value="read">Read only</option>
-          </select>
-          <button class="btn btn--sm" id="refresh">Refresh</button>
-          <button class="btn btn--sm btn--gold" id="export">Export CSV</button>
+          <input id="search" type="search" placeholder="Rechercher un nom, un e-mail, un objet, un message…" aria-label="Rechercher une demande">
+          <select id="filterType" aria-label="Filtrer par catégorie"><option value="">Toutes les catégories</option></select>
+          <select id="filterStatus" aria-label="Filtrer par statut"><option value="active">En cours (hors archivées)</option><option value="">Tous les statuts</option></select>
+          <button class="btn btn--sm" id="refresh">Actualiser</button>
+          <button class="btn btn--sm btn--gold" id="export">Exporter (CSV)</button>
         </div>
         <p class="form__alert" id="adminAlert" role="alert" hidden></p>
         <ul class="requests" id="requests"></ul>
-        <p class="empty" id="empty" hidden>No request matches.</p>
+        <p class="empty" id="empty" hidden>Aucune demande ne correspond.</p>
       </section>
     </div>
   </main>

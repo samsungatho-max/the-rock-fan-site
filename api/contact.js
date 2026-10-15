@@ -1,6 +1,7 @@
 // POST /api/contact — validates and stores a contact request, then notifies the administrator by e-mail.
 const crypto = require("crypto");
 const store = require("./_lib/store");
+const mail = require("./_lib/notify");
 
 const TYPES = ["General enquiry", "Professional enquiry", "Partnership request", "Media request", "Event request", "Philanthropic request", "Other"];
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -27,29 +28,6 @@ function validate(b) {
   return { d, e };
 }
 
-// Notification through Resend (https://resend.com). Skipped when it is not configured.
-async function notify(rec) {
-  const { RESEND_API_KEY, ADMIN_EMAIL, MAIL_FROM } = process.env;
-  if (!RESEND_API_KEY || !ADMIN_EMAIL) return;
-  const text = [
-    "A new request was sent from the website contact form.", "",
-    `Name:     ${rec.name}`, `E-mail:   ${rec.email}`, `Phone:    ${rec.phone || "-"}`, `Country:  ${rec.country}`,
-    `Type:     ${rec.type}`, `Subject:  ${rec.subject}`, "", rec.message, "",
-    "Open the administration page of the website to manage this request.",
-  ].join("\n");
-  const r = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      from: MAIL_FROM || "Website contact <onboarding@resend.dev>",
-      to: [ADMIN_EMAIL],
-      reply_to: rec.email,
-      subject: `New request: ${rec.type} - ${rec.subject}`,
-      text,
-    }),
-  });
-  if (!r.ok) throw new Error(`mail error ${r.status}`);
-}
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed." });
@@ -63,18 +41,32 @@ module.exports = async (req, res) => {
   const { d, e } = validate(b);
   if (Object.keys(e).length) return res.status(422).json({ error: "Please check the highlighted fields.", errors: e });
 
+  let rec;
   try {
     if (await store.hit(store.ipKey("rl:contact", req), 600) > 5) return res.status(429).json({ error: "Too many requests. Please try again later." });
-    const rec = {
-      id: crypto.randomUUID(), createdAt: new Date().toISOString(), read: false,
+    rec = {
+      id: crypto.randomUUID(), createdAt: new Date().toISOString(), status: "new",
       name: d.name, email: d.email, phone: d.phone ? `${d.dial} ${d.phone}` : "", country: d.country,
       subject: d.subject, type: d.type, message: d.message,
+      notification: mail.configured() ? "pending" : "off",
     };
+    // 1. The request is stored first: it is safe in the admin area whatever happens to the e-mail.
     await store.save(rec);
-    await notify(rec).catch((err) => console.error("notification failed:", err.message)); // the request is saved either way
-    return res.status(200).json({ ok: true });
   } catch (err) {
     console.error("contact failed:", err.message);
     return res.status(500).json({ error: "Your request could not be sent. Please try again later." });
   }
+
+  // 2. Then the administrator is notified; the outcome is recorded on the request.
+  if (rec.notification === "pending") {
+    try {
+      await mail.notifyAdmin(rec, `https://${req.headers["x-forwarded-host"] || req.headers.host}`);
+      rec.notification = "sent";
+    } catch (err) {
+      console.error("notification failed:", err.message);
+      rec.notification = "failed";
+    }
+    await store.save(rec).catch((err) => console.error("status update failed:", err.message));
+  }
+  return res.status(200).json({ ok: true });
 };

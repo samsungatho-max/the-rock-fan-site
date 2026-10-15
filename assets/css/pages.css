@@ -93,3 +93,23 @@
   .request summary { grid-template-columns: auto 1fr auto; }
   .request__subject, .request time { grid-column: 2 / -1; }
 }
+
+/* ---------- Administration: counters and statuses ---------- */
+.stats-bar { display: grid; grid-template-columns: 2fr repeat(4, 1fr); gap: 1px; margin-bottom: 1.8rem; background: var(--line); border: 1px solid var(--line); }
+.stat { padding: 1.2rem 1.3rem; background: var(--anth); }
+.stat b { display: block; font: 400 2.4rem/1 var(--display); color: var(--white); }
+.stat span { display: block; margin-top: .4rem; font-size: .66rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.stat--main b { font-size: 3.4rem; color: var(--gold); }
+@media (max-width: 760px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } .stat--main { grid-column: 1 / -1; } }
+.request.is-new .request__dot { background: var(--gold); border-color: var(--gold); }
+.request.is-new .request__who, .request.is-new .request__subject { color: var(--white); font-weight: 600; }
+.request.is-handled .request__dot { background: #6fbf8f; border-color: #6fbf8f; }
+.request.is-archived { opacity: .6; }
+.status { display: inline-block; padding: .15rem .55rem; border: 1px solid var(--line); font-size: .72rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+.status--new { color: var(--gold); border-color: rgba(200, 164, 92, .6); }
+.status--handled { color: #6fbf8f; border-color: rgba(111, 191, 143, .5); }
+.status--archived { color: var(--muted); }
+.request__actions { align-items: center; }
+.request__status { display: flex; align-items: center; gap: .6rem; font-size: .66rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.request__status select { min-height: 2.6rem; padding: 0 2.2rem 0 .8rem; background-color: var(--black); color: var(--white); border: 1px solid rgba(255, 255, 255, .2); font: inherit; font-size: .85rem; letter-spacing: 0; text-transform: none;
+  appearance: none; background-repeat: no-repeat; background-size: .32rem .32rem; background-image: linear-gradient(45deg, transparent 50%, var(--gold) 50%), linear-gradient(135deg, var(--gold) 50%, transparent 50%); background-position: calc(100% - 1rem) 50%, calc(100% - .7rem) 50%; }
