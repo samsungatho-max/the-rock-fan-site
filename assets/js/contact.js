@@ -17,7 +17,7 @@
   $("#footerLegal").innerHTML = S.affiliated
     ? `© ${S.year} — Official Website · <a href="privacy.html">Privacy policy</a>`
     : `© ${S.year} — Independent Fan &amp; Information Website · <a href="privacy.html">Privacy policy</a>
-       <span>.</span>`;
+       <span>This website is an independent fan/information website and is not affiliated with or endorsed by Dwayne Johnson.</span>`;
   const notice = $("#notice");
   if (notice && !S.affiliated) notice.hidden = false;
   document.querySelectorAll("[data-operator]").forEach((el) => { el.textContent = (S.contact && S.contact.operator) || "the administrators of this website"; });
