@@ -146,7 +146,7 @@
   $("#footerLegal").innerHTML = S.affiliated
     ? `© ${esc(S.year)} — Official Website`
     : `© ${esc(S.year)} — Independent Fan &amp; Information Website
-       <span>This website is an independent fan/information website and is not affiliated with or endorsed by Dwayne Johnson. All trademarks, film titles and images belong to their respective owners.</span>`;
+       <span>. All trademarks, film titles and images belong to their respective owners.</span>`;
   $("#footerLegal").insertAdjacentHTML("beforeend", ` <button class="link" data-open="credits">Legal notice</button>`);
 
   /* ---------- Modal ---------- */
